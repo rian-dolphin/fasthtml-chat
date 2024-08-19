@@ -26,12 +26,12 @@ client = Anthropic(api_key=ANTHROPIC_API_KEY)
 sp = "You are a helpful and concise assistant."
 
 
-def ChatMessage(msg, user: bool):
+def ChatMessage(msg, user: bool, id=None):
     bubble_class = "chat-bubble-primary" if user else "chat-bubble-secondary"
     chat_class = "chat-end" if user else "chat-start"
-    return Div(cls=f"chat {chat_class}")(
+    return Div(cls=f"chat {chat_class}", id=id)(
         Div("user" if user else "assistant", cls="chat-header"),
-        Div(msg, cls=f"chat-bubble {bubble_class}"),
+        Div(msg, cls=f"chat-bubble {bubble_class}", id=f"{id}-content" if id else None),
         Hidden(
             f"{{'role': '{'user' if user else 'assistant'}', 'content': '{msg}'}}",
             name="messages",
@@ -80,6 +80,10 @@ async def send(msg: str, messages: list[str] = None):
         yield to_xml(ChatMessage(msg, True))
         yield to_xml(ChatInput())  # Clear the input field via an OOB swap
 
+        # Create the assistant's message container
+        assistant_id = f"assistant-{len(messages)}"
+        yield to_xml(ChatMessage("", False, id=assistant_id))
+
         assistant_message = ""
         with client.messages.stream(
             max_tokens=1000,
@@ -89,12 +93,18 @@ async def send(msg: str, messages: list[str] = None):
         ) as stream:
             for text in stream.text_stream:
                 assistant_message += text
+                # Update the entire content each time
                 yield to_xml(
-                    Span(text, id="assistant-message", hx_swap_oob="beforeend")
+                    Div(
+                        assistant_message,
+                        id=f"{assistant_id}-content",
+                        hx_swap_oob="innerHTML",
+                    )
                 )
-                await asyncio.sleep(0.05)  # Small delay to control the stream rate
+                await asyncio.sleep(0.15)  # Small delay to control the stream rate
 
         messages.append({"role": "assistant", "content": assistant_message})
+        # Update the hidden input with the full message
         yield to_xml(
             Hidden(
                 f"{{'role': 'assistant', 'content': '{assistant_message}'}}",
