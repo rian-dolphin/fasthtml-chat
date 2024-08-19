@@ -1,5 +1,5 @@
 import asyncio
-import html
+import json
 
 from anthropic import Anthropic
 from claudette import *
@@ -30,12 +30,17 @@ sp = "You are a helpful and concise assistant."
 def ChatMessage(msg, user: bool, id=None):
     bubble_class = "chat-bubble-primary" if user else "chat-bubble-secondary"
     chat_class = "chat-end" if user else "chat-start"
-    return Div(cls=f"chat {chat_class}", id=id)(
+    return Div(cls=f"chat {chat_class}", id=f"message-{id}")(
         Div("user" if user else "assistant", cls="chat-header"),
-        Div(msg, cls=f"chat-bubble {bubble_class}", id=f"{id}-content" if id else None),
+        Div(
+            msg,
+            cls=f"chat-bubble {bubble_class}",
+            id=f"message-{id}-content" if id else None,
+        ),
         Hidden(
-            f"{{'role': '{'user' if user else 'assistant'}', 'content': '{html.escape(msg)}'}}",
+            json.dumps({"role": "user" if user else "assistant", "content": msg}),
             name="messages",
+            id=f"message-{id}-hidden" if id else None,
         ),
     )
 
@@ -49,6 +54,7 @@ def ChatInput(swap_oob=False):
         "hx_swap": "beforeend",
         "hx_ext": "chunked-transfer",
         "id": "chat-form",
+        "hx_include": "[name='messages']",
     }
     if swap_oob:
         attrs["hx_swap_oob"] = "outerHTML"
@@ -77,22 +83,27 @@ def index():
     return Titled("Chatbot Demo", page)
 
 
+import json
+
+
 @app.post
 async def send(msg: str, messages: list[str] = None):
+    print(messages)
     if not messages:
         messages = []
     else:
-        messages = [eval(str(m)) for m in messages]
+        messages = [json.loads(m) for m in messages]
     messages.append({"role": "user", "content": msg.rstrip()})
 
     async def stream_response():
-        yield to_xml(ChatMessage(msg, True))
+        yield to_xml(ChatMessage(msg, True, id=len(messages) - 1))
 
         # Create the assistant's message container
-        assistant_id = f"assistant-{len(messages)}"
+        assistant_id = len(messages)
         yield to_xml(ChatMessage("", False, id=assistant_id))
 
         assistant_message = ""
+        print(messages)
         with client.messages.stream(
             max_tokens=1000,
             messages=messages,
@@ -104,20 +115,24 @@ async def send(msg: str, messages: list[str] = None):
                 yield to_xml(
                     Div(
                         assistant_message,
-                        id=f"{assistant_id}-content",
+                        id=f"message-{assistant_id}-content",
                         hx_swap_oob="innerHTML",
                     )
                 )
                 await asyncio.sleep(0.05)
 
         messages.append({"role": "assistant", "content": assistant_message})
-        yield to_xml(
-            Hidden(
-                f"{{'role': 'assistant', 'content': '{html.escape(assistant_message)}'}}",
-                name="messages",
-                hx_swap_oob="beforeend",
+
+        # Update all hidden messages
+        for i, message in enumerate(messages):
+            yield to_xml(
+                Hidden(
+                    json.dumps(message),
+                    name="messages",
+                    hx_swap_oob="true",
+                    id=f"message-{i}-hidden",
+                )
             )
-        )
 
         # Reset the form with swap_oob=True
         yield to_xml(ChatInput(swap_oob=True))
