@@ -11,7 +11,7 @@ app = FastHTML(hdrs=(picolink, htmxlink), live=True)
 
 async def message_generator():
     for i in range(10):
-        yield f"chunk {i} "
+        yield to_xml(Div(f"chunk {i}"))
         await asyncio.sleep(0.15)
 
 
