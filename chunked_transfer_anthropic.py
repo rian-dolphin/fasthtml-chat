@@ -1,4 +1,5 @@
 import asyncio
+import html
 
 from anthropic import Anthropic
 from claudette import *
@@ -33,7 +34,7 @@ def ChatMessage(msg, user: bool, id=None):
         Div("user" if user else "assistant", cls="chat-header"),
         Div(msg, cls=f"chat-bubble {bubble_class}", id=f"{id}-content" if id else None),
         Hidden(
-            f"{{'role': '{'user' if user else 'assistant'}', 'content': '{msg}'}}",
+            f"{{'role': '{'user' if user else 'assistant'}', 'content': '{html.escape(msg)}'}}",
             name="messages",
         ),
     )
@@ -112,7 +113,7 @@ async def send(msg: str, messages: list[str] = None):
         messages.append({"role": "assistant", "content": assistant_message})
         yield to_xml(
             Hidden(
-                f"{{'role': 'assistant', 'content': '{assistant_message}'}}",
+                f"{{'role': 'assistant', 'content': '{html.escape(assistant_message)}'}}",
                 name="messages",
                 hx_swap_oob="beforeend",
             )
