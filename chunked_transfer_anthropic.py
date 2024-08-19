@@ -83,9 +83,6 @@ def index():
     return Titled("Chatbot Demo", page)
 
 
-import json
-
-
 @app.post
 async def send(msg: str, messages: list[str] = None):
     if not messages:
