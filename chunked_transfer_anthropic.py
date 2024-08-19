@@ -41,29 +41,37 @@ def ChatMessage(msg, user: bool, id=None):
 
 # The input field for the user message. Also used to clear the
 # input field after sending a message via an OOB swap
-def ChatInput():
-    return Input(
-        name="msg",
-        id="msg-input",
-        placeholder="Type a message",
-        cls="input input-bordered w-full",
-        hx_swap_oob="true",
+def ChatInput(swap_oob=False):
+    attrs = {
+        "hx_post": send,
+        "hx_target": "#chatlist",
+        "hx_swap": "beforeend",
+        "hx_ext": "chunked-transfer",
+        "id": "chat-form",
+    }
+    if swap_oob:
+        attrs["hx_swap_oob"] = "outerHTML"
+
+    return Form(**attrs)(
+        Group(
+            Input(
+                name="msg",
+                id="msg-input",
+                placeholder="Type a message",
+                cls="input input-bordered w-full",
+            ),
+            Button("Send", cls="btn btn-primary"),
+        )
     )
 
 
 # The main screen
 @app.get
 def index():
-    page = Form(
-        hx_post=send,
-        hx_target="#chatlist",
-        hx_swap="beforeend",
-        hx_ext="chunked-transfer",  # Add this line to enable chunked transfer
-    )(
+    page = Div(
         Div(id="chatlist", cls="chat-box h-[73vh] overflow-y-auto"),
-        Div(cls="flex space-x-2 mt-2")(
-            Group(ChatInput(), Button("Send", cls="btn btn-primary"))
-        ),
+        ChatInput(),
+        cls="p-4 max-w-lg mx-auto",
     )
     return Titled("Chatbot Demo", page)
 
@@ -78,7 +86,6 @@ async def send(msg: str, messages: list[str] = None):
 
     async def stream_response():
         yield to_xml(ChatMessage(msg, True))
-        yield to_xml(ChatInput())  # Clear the input field via an OOB swap
 
         # Create the assistant's message container
         assistant_id = f"assistant-{len(messages)}"
@@ -93,7 +100,6 @@ async def send(msg: str, messages: list[str] = None):
         ) as stream:
             for text in stream.text_stream:
                 assistant_message += text
-                # Update the entire content each time
                 yield to_xml(
                     Div(
                         assistant_message,
@@ -101,10 +107,9 @@ async def send(msg: str, messages: list[str] = None):
                         hx_swap_oob="innerHTML",
                     )
                 )
-                await asyncio.sleep(0.15)  # Small delay to control the stream rate
+                await asyncio.sleep(0.05)
 
         messages.append({"role": "assistant", "content": assistant_message})
-        # Update the hidden input with the full message
         yield to_xml(
             Hidden(
                 f"{{'role': 'assistant', 'content': '{assistant_message}'}}",
@@ -112,6 +117,9 @@ async def send(msg: str, messages: list[str] = None):
                 hx_swap_oob="beforeend",
             )
         )
+
+        # Reset the form with swap_oob=True
+        yield to_xml(ChatInput(swap_oob=True))
 
     return StreamingResponse(stream_response(), media_type="text/html")
 
