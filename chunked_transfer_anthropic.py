@@ -6,6 +6,7 @@ from claudette import *
 from fasthtml.common import *
 from starlette.responses import StreamingResponse
 
+# This is a local file excluded from the repository via gitignore - add your own API key
 from keys import ANTHROPIC_API_KEY
 
 # Set up the app, including daisyui and tailwind for the chat component
