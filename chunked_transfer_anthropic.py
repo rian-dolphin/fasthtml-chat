@@ -88,7 +88,6 @@ import json
 
 @app.post
 async def send(msg: str, messages: list[str] = None):
-    print(messages)
     if not messages:
         messages = []
     else:
@@ -104,7 +103,6 @@ async def send(msg: str, messages: list[str] = None):
         yield to_xml(ChatMessage("", False, id=assistant_id))
 
         assistant_message = ""
-        print(messages)
         with client.messages.stream(
             max_tokens=1000,
             messages=messages,
@@ -125,6 +123,7 @@ async def send(msg: str, messages: list[str] = None):
         messages.append({"role": "assistant", "content": assistant_message})
 
         # Update all hidden messages
+        # State is stored in the html directly via hidden messages with ids
         for i, message in enumerate(messages):
             yield to_xml(
                 Hidden(
