@@ -96,6 +96,7 @@ async def send(msg: str, messages: list[str] = None):
     messages.append({"role": "user", "content": msg.rstrip()})
 
     async def stream_response():
+        yield to_xml(ChatInput(swap_oob=True))
         yield to_xml(ChatMessage(msg, True, id=len(messages) - 1))
 
         # Create the assistant's message container
@@ -133,9 +134,6 @@ async def send(msg: str, messages: list[str] = None):
                     id=f"message-{i}-hidden",
                 )
             )
-
-        # Reset the form with swap_oob=True
-        yield to_xml(ChatInput(swap_oob=True))
 
     return StreamingResponse(stream_response(), media_type="text/html")
 
