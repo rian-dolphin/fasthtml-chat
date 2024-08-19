@@ -105,7 +105,7 @@ async def send(msg: str, messages: list[str] = None):
             max_tokens=1000,
             messages=messages,
             model="claude-3-haiku-20240307",
-            system="You are a very concise assistant.",
+            system=sp,
         ) as stream:
             for text in stream.text_stream:
                 assistant_message += text
