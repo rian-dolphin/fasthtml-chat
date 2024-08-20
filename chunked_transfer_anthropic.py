@@ -1,12 +1,12 @@
 import asyncio
 import json
+import os
 
 from anthropic import Anthropic
 from fasthtml.common import *
 from starlette.responses import StreamingResponse
 
-# This is a local file excluded from the repository via gitignore - add your own API key
-from keys import ANTHROPIC_API_KEY
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
 # Set up the app, including daisyui and tailwind for the chat component
 hdrs = (
