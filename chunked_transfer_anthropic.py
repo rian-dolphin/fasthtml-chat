@@ -152,6 +152,7 @@ async def send(msg: str, messages: list[str] = None):
             )
 
     response = StreamingResponse(stream_response(), media_type="text/html")
+    response.headers["test-header"] = "testing"
     return response
 
 
