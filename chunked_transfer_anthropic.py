@@ -104,13 +104,11 @@ def index():
 
 @app.post
 async def send(msg: str, messages: list[str] = None):
-    print(messages)
     if not messages:
         messages = []
     else:
         messages = messages[2:]  # Skip the placeholders
         messages = [json.loads(m) for m in messages]
-    print(messages)
     messages.append({"role": "user", "content": msg.rstrip()})
 
     async def stream_response():
