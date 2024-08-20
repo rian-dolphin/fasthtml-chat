@@ -13,7 +13,7 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 hdrs = (
     picolink,
     Script(
-        src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.3.0/transfer-encoding-chunked.js"
+        src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.4.0/transfer-encoding-chunked.js"
     ),
     Script(src="https://cdn.tailwindcss.com"),
     Link(
