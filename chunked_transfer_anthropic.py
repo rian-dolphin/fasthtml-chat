@@ -22,7 +22,7 @@ hdrs = (
 )
 app = FastHTML(hdrs=hdrs, cls="p-4 max-w-lg mx-auto")
 
-# Set up a chat model (https://claudette.answer.ai/)
+# Set up a chat model
 client = Anthropic(api_key=ANTHROPIC_API_KEY)
 sp = "You are a helpful and concise assistant."
 
