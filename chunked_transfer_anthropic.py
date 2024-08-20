@@ -6,7 +6,9 @@ from anthropic import Anthropic
 from fasthtml.common import *
 from starlette.responses import StreamingResponse
 
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+from keys import ANTHROPIC_API_KEY
+
+# ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
 # Set up the app, including daisyui and tailwind for the chat component
 htmx_extension_script = Script(
@@ -32,7 +34,8 @@ htmx_extension_script = Script(
               xhr.onprogress = function() {
                   if (isComplete) return;
 
-                  var isChunked = xhr.getResponseHeader("Transfer-Encoding-Ext") === "chunked";
+                  var isChunked = xhr.getResponseHeader("Transfer-Encoding") === "chunked" ||
+                                xhr.getResponseHeader("X-Transfer-Encoding") === "chunked";
                   if (!isChunked) return;
 
                   var response = xhr.response;
@@ -167,11 +170,13 @@ def index():
 
 @app.post
 async def send(msg: str, messages: list[str] = None):
+    print(messages)
     if not messages:
         messages = []
     else:
         messages = messages[2:]  # Skip the placeholders
         messages = [json.loads(m) for m in messages]
+    print(messages)
     messages.append({"role": "user", "content": msg.rstrip()})
 
     async def stream_response():
@@ -215,7 +220,7 @@ async def send(msg: str, messages: list[str] = None):
             )
 
     response = StreamingResponse(stream_response(), media_type="text/html")
-    response.headers["Transfer-Encoding-Ext"] = "chunked"
+    response.headers["X-Transfer-Encoding"] = "chunked"
     return response
 
 
