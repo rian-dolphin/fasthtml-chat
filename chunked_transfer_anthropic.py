@@ -2,7 +2,6 @@ import asyncio
 import json
 
 from anthropic import Anthropic
-from claudette import *
 from fasthtml.common import *
 from starlette.responses import StreamingResponse
 
