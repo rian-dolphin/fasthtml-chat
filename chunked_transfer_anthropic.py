@@ -6,9 +6,9 @@ from anthropic import Anthropic
 from fasthtml.common import *
 from starlette.responses import StreamingResponse
 
-from keys import ANTHROPIC_API_KEY
+# from keys import ANTHROPIC_API_KEY
 
-# ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
 # Set up the app, including daisyui and tailwind for the chat component
 htmx_extension_script = Script(
