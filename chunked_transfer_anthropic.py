@@ -155,6 +155,9 @@ async def send(msg: str, messages: list[str] = None):
                     id=f"message-{i}-hidden",
                 )
             )
+            await asyncio.sleep(0.05)
+
+        yield "end of stream"
 
     response = StreamingResponse(stream_response(), media_type="text/html")
     response.headers["X-Transfer-Encoding"] = "chunked"
