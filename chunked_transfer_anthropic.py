@@ -10,7 +10,6 @@ from starlette.responses import StreamingResponse
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
-# Set up the app, including daisyui and tailwind for the chat component
 hdrs = (
     picolink,
     Script(
@@ -24,9 +23,7 @@ hdrs = (
 )
 app = FastHTML(hdrs=hdrs, cls="p-4 max-w-lg mx-auto")
 
-# Set up a chat model
 client = Anthropic(api_key=ANTHROPIC_API_KEY)
-sp = "You are a helpful and concise assistant."
 
 
 def ChatMessage(msg, user: bool, id: int = None):
@@ -48,7 +45,8 @@ def ChatMessage(msg, user: bool, id: int = None):
 
 
 def InitialChatMessage():
-    # Create initial html divs with the name 'messages' for hx-include
+    # Create initial html divs with the name 'messages'
+    # These are necessary for hx-include
     return Div(id=f"message-placeholder")(
         Hidden(
             json.dumps(
@@ -105,7 +103,12 @@ def main():
 
 
 @app.post("/generate-message")
-async def generate_message(msg: str, messages: list[str] = None):
+async def generate_message(
+    msg: str,
+    messages: list[str] = None,
+    model_name: str = "claude-3-haiku-20240307",
+    system_prompt: str = "You are a helpful and concise assistant.",
+):
     if not messages:
         messages = []
     else:
@@ -129,8 +132,8 @@ async def generate_message(msg: str, messages: list[str] = None):
         with client.messages.stream(
             max_tokens=1000,
             messages=messages,
-            model="claude-3-haiku-20240307",
-            system=sp,
+            model=model_name,
+            system=system_prompt,
         ) as stream:
             for text in stream.text_stream:
                 assistant_message += text
@@ -143,7 +146,6 @@ async def generate_message(msg: str, messages: list[str] = None):
                 )
                 await asyncio.sleep(0.05)
 
-        # Update all hidden messages
         # State is stored in the html directly via hidden messages with ids
         for role, i, message in [
             ("user", user_msg_id, msg),
