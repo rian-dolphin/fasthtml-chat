@@ -23,8 +23,6 @@ hdrs = (
 )
 app = FastHTML(hdrs=hdrs, cls="p-4 max-w-lg mx-auto")
 
-client = Anthropic(api_key=ANTHROPIC_API_KEY)
-
 
 def ChatMessage(msg, user: bool, id: int = None):
     bubble_class = "chat-bubble-primary" if user else "chat-bubble-secondary"
@@ -109,6 +107,7 @@ async def generate_message(
     model_name: str = "claude-3-haiku-20240307",
     system_prompt: str = "You are a helpful and concise assistant.",
 ):
+    client = Anthropic(api_key=ANTHROPIC_API_KEY)
     if not messages:
         messages = []
     else:
