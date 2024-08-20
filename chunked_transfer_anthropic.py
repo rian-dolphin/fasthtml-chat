@@ -52,12 +52,13 @@ def ChatInput(swap_oob=False, post_url="/generate-message"):
         "hx_ext": "chunked-transfer",
         "id": "chat-form",
         "hx_include": "[name='messages']",
+        "hx_disabled_elt": "#msg-group",
     }
     if swap_oob:
         attrs["hx_swap_oob"] = "outerHTML"
 
     return Form(**attrs)(
-        Group(
+        Group(id="msg-group")(
             Input(
                 name="msg",
                 id="msg-input",
