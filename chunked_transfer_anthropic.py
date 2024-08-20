@@ -27,7 +27,7 @@ client = Anthropic(api_key=ANTHROPIC_API_KEY)
 sp = "You are a helpful and concise assistant."
 
 
-def ChatMessage(msg, user: bool, id=None):
+def ChatMessage(msg, user: bool, id: int = None):
     bubble_class = "chat-bubble-primary" if user else "chat-bubble-secondary"
     chat_class = "chat-end" if user else "chat-start"
     return Div(cls=f"chat {chat_class}", id=f"message-{id}")(
@@ -41,6 +41,22 @@ def ChatMessage(msg, user: bool, id=None):
             json.dumps({"role": "user" if user else "assistant", "content": msg}),
             name="messages",
             id=f"message-{id}-hidden" if id else None,
+        ),
+    )
+
+
+def InitialChatMessage():
+    # Create initial html divs with the name 'messages' for hx-include
+    return Div(id=f"message-placeholder")(
+        Hidden(
+            json.dumps(
+                {
+                    "role": "placeholder",
+                    "content": "Initiate the messages for hx-include",
+                }
+            ),
+            name="messages",
+            id="message-placeholder-hidden",
         ),
     )
 
@@ -76,7 +92,10 @@ def ChatInput(swap_oob=False):
 @app.get
 def index():
     page = Div(
-        Div(id="chatlist", cls="chat-box h-[73vh] overflow-y-auto"),
+        Div(id="chatlist", cls="chat-box h-[73vh] overflow-y-auto")(
+            InitialChatMessage(),
+            InitialChatMessage(),  # Need two placeholders so 'messages' given as a list to "/send"
+        ),
         ChatInput(),
         cls="p-4 max-w-lg mx-auto",
     )
@@ -88,6 +107,7 @@ async def send(msg: str, messages: list[str] = None):
     if not messages:
         messages = []
     else:
+        messages = messages[2:]  # Skip the placeholders
         messages = [json.loads(m) for m in messages]
     messages.append({"role": "user", "content": msg.rstrip()})
 
