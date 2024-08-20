@@ -13,7 +13,9 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 # Set up the app, including daisyui and tailwind for the chat component
 hdrs = (
     picolink,
-    Script(src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.3.0/transfer-encoding-chunked.js"),
+    Script(
+        src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.3.0/transfer-encoding-chunked.js"
+    ),
     Script(src="https://cdn.tailwindcss.com"),
     Link(
         rel="stylesheet",
