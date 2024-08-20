@@ -42,23 +42,6 @@ def ChatMessage(msg, user: bool, id: int = None):
     )
 
 
-def InitialChatMessage():
-    # Create initial html divs with the name 'messages'
-    # These are necessary for hx-include
-    return Div(id=f"message-placeholder")(
-        Hidden(
-            json.dumps(
-                {
-                    "role": "placeholder",
-                    "content": "Initiate the messages for hx-include",
-                }
-            ),
-            name="messages",
-            id="message-placeholder-hidden",
-        ),
-    )
-
-
 # The input field for the user message. Also used to clear the
 # input field after sending a message via an OOB swap
 def ChatInput(swap_oob=False, post_url="/generate-message"):
@@ -90,10 +73,7 @@ def ChatInput(swap_oob=False, post_url="/generate-message"):
 @app.get("/")
 def main():
     page = Div(
-        Div(id="chatlist", cls="chat-box h-[73vh] overflow-y-auto")(
-            InitialChatMessage(),
-            InitialChatMessage(),  # Need two placeholders so 'messages' given as a list to "/generate-message"
-        ),
+        Div(id="chatlist", cls="chat-box h-[73vh] overflow-y-auto"),
         ChatInput(),
         cls="p-4 max-w-lg mx-auto",
     )
