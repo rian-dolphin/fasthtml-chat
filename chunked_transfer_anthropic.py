@@ -92,7 +92,7 @@ def main():
     page = Div(
         Div(id="chatlist", cls="chat-box h-[73vh] overflow-y-auto")(
             InitialChatMessage(),
-            InitialChatMessage(),  # Need two placeholders so 'messages' given as a list to "/send"
+            InitialChatMessage(),  # Need two placeholders so 'messages' given as a list to "/generate-message"
         ),
         ChatInput(),
         cls="p-4 max-w-lg mx-auto",
