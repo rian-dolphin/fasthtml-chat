@@ -117,12 +117,13 @@ async def send(msg: str, messages: list[str] = None):
     messages.append({"role": "user", "content": msg.rstrip()})
 
     async def stream_response():
+        user_msg_id = len(messages) - 1
+        assistant_msg_id = len(messages)
         yield to_xml(ChatInput(swap_oob=True))
-        yield to_xml(ChatMessage(msg, True, id=len(messages) - 1))
+        yield to_xml(ChatMessage(msg, True, id=user_msg_id))
 
         # Create the assistant's message container
-        assistant_id = len(messages)
-        yield to_xml(ChatMessage("", False, id=assistant_id))
+        yield to_xml(ChatMessage("", False, id=assistant_msg_id))
 
         assistant_message = ""
         with client.messages.stream(
@@ -136,20 +137,21 @@ async def send(msg: str, messages: list[str] = None):
                 yield to_xml(
                     Div(
                         assistant_message,
-                        id=f"message-{assistant_id}-content",
+                        id=f"message-{assistant_msg_id}-content",
                         hx_swap_oob="innerHTML",
                     )
                 )
                 await asyncio.sleep(0.05)
 
-        messages.append({"role": "assistant", "content": assistant_message})
-
         # Update all hidden messages
         # State is stored in the html directly via hidden messages with ids
-        for i, message in enumerate(messages):
+        for role, i, message in [
+            ("user", user_msg_id, msg),
+            ("assistant", assistant_msg_id, assistant_message),
+        ]:
             yield to_xml(
                 Hidden(
-                    json.dumps(message),
+                    json.dumps({"role": role, "content": message}),
                     name="messages",
                     hx_swap_oob="true",
                     id=f"message-{i}-hidden",
