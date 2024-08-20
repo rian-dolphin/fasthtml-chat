@@ -65,9 +65,9 @@ def InitialChatMessage():
 
 # The input field for the user message. Also used to clear the
 # input field after sending a message via an OOB swap
-def ChatInput(swap_oob=False):
+def ChatInput(swap_oob=False, post_url="/generate-message"):
     attrs = {
-        "hx_post": send,
+        "hx_post": post_url,
         "hx_target": "#chatlist",
         "hx_swap": "beforeend",
         "hx_ext": "chunked-transfer",
@@ -91,8 +91,8 @@ def ChatInput(swap_oob=False):
 
 
 # The main screen
-@app.get
-def index():
+@app.get("/")
+def main():
     page = Div(
         Div(id="chatlist", cls="chat-box h-[73vh] overflow-y-auto")(
             InitialChatMessage(),
@@ -104,8 +104,8 @@ def index():
     return Titled("Chatbot Demo", page)
 
 
-@app.post
-async def send(msg: str, messages: list[str] = None):
+@app.post("/generate-message")
+async def generate_message(msg: str, messages: list[str] = None):
     if not messages:
         messages = []
     else:
