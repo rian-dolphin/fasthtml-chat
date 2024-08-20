@@ -151,7 +151,9 @@ async def send(msg: str, messages: list[str] = None):
                 )
             )
 
-    return StreamingResponse(stream_response(), media_type="text/html")
+    response = StreamingResponse(stream_response(), media_type="text/html")
+    response.headers["Transfer-Encoding"] = "chunked"
+    return response
 
 
 serve()
