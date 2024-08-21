@@ -1,7 +1,4 @@
-from anthropic import Anthropic
-from claudette import Client
 from fasthtml.common import *
-from openai import OpenAI
 
 from fh_chat import Chat
 from keys import ANTHROPIC_API_KEY, OPENAI_API_KEY
@@ -21,17 +18,27 @@ app.get("/")(Chat.chat_page)
 # Choose one of these client setups:
 
 # Anthropic setup
+from anthropic import Anthropic
+
 anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)
-chat = Chat(anthropic_client, model_name="claude-3-haiku-20240307", max_tokens=1000)
+chat = Chat(
+    anthropic_client,
+    model="claude-3-haiku-20240307",
+    system="Respond with a haiku",
+    max_tokens=1000,
+    temperature=0.5,
+)
 
 # OpenAI setup
+# from openai import OpenAI
 # openai_client = OpenAI(api_key=OPENAI_API_KEY)
-# chat = Chat(openai_client, model_name="gpt-3.5-turbo")
+# chat = Chat(openai_client, model="gpt-3.5-turbo", system="Respond with a haiku")
 
 # Claudette setup
+# from claudette import Client
 # os.environ["ANTHROPIC_API_KEY"] = ANTHROPIC_API_KEY
 # claudette_client = Client(model="claude-3-haiku-20240307")
-# chat = Chat(claudette_client)
+# chat = Chat(claudette_client, sp="Respond with a haiku")
 
 app.post("/generate-message")(chat.generate_message)
 

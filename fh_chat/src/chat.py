@@ -9,27 +9,16 @@ from .clients import AnthropicClient, ClaudetteClient, OpenAIClient
 
 
 class Chat:
-    def __init__(
-        self,
-        client,
-        model_name: Optional[str] = None,
-        system_prompt: str = "You are a helpful and concise assistant.",
-        max_tokens: int = 1000,
-    ):
-        self.system_prompt = system_prompt
-        self.ai_client = self._create_client(client, model_name, max_tokens)
+    def __init__(self, client, **kwargs):
+        self.ai_client = self._create_client(client, **kwargs)
 
-    def _create_client(self, client, model_name: str, max_tokens: int):
+    def _create_client(self, client, **kwargs):
         if "anthropic" in str(type(client)).lower():
-            return AnthropicClient(client, model_name, max_tokens)
+            return AnthropicClient(client, **kwargs)
         elif "openai" in str(type(client)).lower():
-            return OpenAIClient(client, model_name)
+            return OpenAIClient(client, **kwargs)
         elif "claudette" in str(type(client)).lower():
-            if model_name is not None:
-                raise ValueError(
-                    "Model name should not be specified for Claudette client. It uses the model specified in the client initialization."
-                )
-            return ClaudetteClient(client)
+            return ClaudetteClient(client, **kwargs)
         else:
             raise ValueError(
                 "Unsupported client type. Please use an Anthropic, OpenAI, or Claudette client."
@@ -80,18 +69,26 @@ class Chat:
         )
 
     @staticmethod
-    def chat_page():
+    def chat_page(include_style_headers: bool = False):
         page = Div(cls="p-4 max-w-3xl mx-auto")(
             Div(id="chatlist", cls="chat-box h-[73vh] overflow-y-auto"),
             Chat.chat_input(),
         )
-        return (
+        style_headers = [
+            picolink,
+            Script(src="https://cdn.tailwindcss.com"),
+            Link(
+                rel="stylesheet",
+                href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css",
+            ),
+        ]
+        return [
             Title(f"Chatbot Demo"),
             page,
             Script(
                 src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.4.0/transfer-encoding-chunked.js"
             ),
-        )
+        ] + (style_headers if include_style_headers else [])
 
     async def generate_message(self, msg: str, messages: List[str] = None):
         if not messages:
@@ -114,9 +111,7 @@ class Chat:
             yield to_xml(self.chat_message("", False, id=assistant_msg_id))
 
             assistant_message = ""
-            async for text in self.ai_client.generate_stream(
-                messages, system_prompt=self.system_prompt
-            ):
+            async for text in self.ai_client.generate_stream(messages):
                 assistant_message += text
                 yield to_xml(
                     Div(
