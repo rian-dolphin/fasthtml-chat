@@ -21,7 +21,11 @@ def ChatMessage(msg: str, user: bool, id: Optional[int] = None):
     )
 
 
-def ChatInput(swap_oob: bool = False, post_url: str = "/generate-message"):
+def ChatInput(
+    swap_oob: bool = False,
+    post_url: str = "/generate-message",
+    placeholder: str = "Type a message",
+):
     attrs = {
         "hx_post": post_url,
         "hx_target": "#chatlist",
@@ -39,7 +43,7 @@ def ChatInput(swap_oob: bool = False, post_url: str = "/generate-message"):
             Input(
                 name="msg",
                 id="msg-input",
-                placeholder="Type a message",
+                placeholder=placeholder,
                 cls="input input-bordered w-full",
             ),
             Button("Send", cls="btn btn-primary"),
