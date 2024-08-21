@@ -19,7 +19,7 @@ app.get("/")(Chat.chat_page)
 # Anthropic setup
 from anthropic import Anthropic
 
-ANTHROPIC_API_KEY = "..."
+ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
 anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)
 chat = Chat(
     anthropic_client,
