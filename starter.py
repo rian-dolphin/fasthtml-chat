@@ -1,7 +1,6 @@
 from fasthtml.common import *
 
 from fh_chat import Chat
-from keys import ANTHROPIC_API_KEY, OPENAI_API_KEY
 
 hdrs = (
     picolink,
@@ -20,6 +19,7 @@ app.get("/")(Chat.chat_page)
 # Anthropic setup
 from anthropic import Anthropic
 
+ANTHROPIC_API_KEY = "..."
 anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)
 chat = Chat(
     anthropic_client,
@@ -31,12 +31,13 @@ chat = Chat(
 
 # OpenAI setup
 # from openai import OpenAI
+# OPENAI_API_KEY = "..."
 # openai_client = OpenAI(api_key=OPENAI_API_KEY)
 # chat = Chat(openai_client, model="gpt-3.5-turbo", system="Respond with a haiku")
 
 # Claudette setup
 # from claudette import Client
-# os.environ["ANTHROPIC_API_KEY"] = ANTHROPIC_API_KEY
+# os.environ["ANTHROPIC_API_KEY"] = "..."
 # claudette_client = Client(model="claude-3-haiku-20240307")
 # chat = Chat(claudette_client, sp="Respond with a haiku")
 
