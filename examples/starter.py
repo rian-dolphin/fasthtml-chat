@@ -1,6 +1,6 @@
 from fasthtml.common import *
 
-from fh_chat import Chat
+from fh_chat import Chat, ChatPage
 
 hdrs = (
     picolink,
@@ -12,7 +12,7 @@ hdrs = (
 )
 app = FastHTML(hdrs=hdrs, cls="p-4 max-w-lg mx-auto")
 
-app.get("/")(Chat.chat_page)
+app.get("/")(ChatPage)
 
 # Choose one of these client setups:
 

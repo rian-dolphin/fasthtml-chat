@@ -1,7 +1,7 @@
 from claudette import Client
 from fasthtml.common import *
 
-from fh_chat import Chat
+from fh_chat import Chat, ChatPage
 
 # os.environ["ANTHROPIC_API_KEY"] must be set
 claudette_client = Client(model="claude-3-haiku-20240307")
@@ -12,7 +12,7 @@ app = FastHTML()
 
 @app.get("/")
 def page():
-    return Chat.chat_page(include_style_headers=True)
+    return ChatPage(include_style_headers=True)
 
 
 app.post("/generate-message")(chat.generate_message)
