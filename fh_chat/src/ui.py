@@ -28,7 +28,6 @@ def ChatInput(
     group_cls: Optional[str] = None,
     input_cls: str = "input-bordered",
     button_cls: str = "btn-primary",
-    auto_resize: bool = True,
 ):
     attrs = {
         "hx_post": post_url,
@@ -89,6 +88,14 @@ function autoExpandTextarea() {
 
   // Initial call to set the correct height
   adjustHeight();
+
+  // Add event listener for Enter key
+  textarea.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      form.dispatchEvent(new Event('submit'));
+    }
+  });
 }
 
 // Call the function when the DOM is loaded
@@ -113,9 +120,7 @@ document.body.addEventListener('htmx:afterSwap', autoExpandTextarea);
             Button("Send", cls=f"btn {button_cls} flex-shrink-0"),
         )
     )
-    if auto_resize:
-        return component, Script(auto_resize_script)
-    return component
+    return component, Script(auto_resize_script)
 
 
 def ChatPage(
