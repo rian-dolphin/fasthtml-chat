@@ -18,7 +18,7 @@ pip install fh-chat
 
 ## Quick Start
 
-Check out the examples folder. As with any FastHTML app you can run them using python like:
+Check out the examples [here](https://github.com/rian-dolphin/fasthtml-chat/tree/main/examples) to get started. As with any FastHTML app you can run them using python like:
 
 ```bash
 python examples/min_example.py
