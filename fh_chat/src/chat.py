@@ -69,9 +69,14 @@ class Chat:
         )
 
     @staticmethod
-    def chat_page(include_style_headers: bool = False):
-        page = Div(cls="p-4 max-w-3xl mx-auto")(
-            Div(id="chatlist", cls="chat-box h-[73vh] overflow-y-auto"),
+    def chat_page(
+        include_style_headers: bool = False,
+        title: str = "Chatbot Demo",
+        cls: str = "p-4 max-w-3xl mx-auto",
+        view_height: str = 73,
+    ):
+        page = Div(cls=cls)(
+            Div(id="chatlist", cls=f"chat-box h-[{view_height}vh] overflow-y-auto"),
             Chat.chat_input(),
         )
         style_headers = [
@@ -83,7 +88,7 @@ class Chat:
             ),
         ]
         return [
-            Title(f"Chatbot Demo"),
+            Title(title),
             page,
             Script(
                 src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.4.0/transfer-encoding-chunked.js"
