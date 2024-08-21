@@ -65,10 +65,13 @@ def ChatPage(
             href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css",
         ),
     ]
-    return [
-        Title(title),
-        page,
-        Script(
-            src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.4.0/transfer-encoding-chunked.js"
-        ),
-    ] + (style_headers if include_style_headers else [])
+    return tuple(
+        [
+            Title(title),
+            page,
+            Script(
+                src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.4.0/transfer-encoding-chunked.js"
+            ),
+        ]
+        + (style_headers if include_style_headers else [])
+    )
