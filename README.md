@@ -18,55 +18,11 @@ pip install fh-chat
 
 ## Quick Start
 
-```python
-from claudette import Client
-from fasthtml.common import *
-from fh_chat import Chat
+Check out the examples folder. As with any FastHTML app you can run them using python like:
 
-# Set up your AI client (Claudette example)
-# os.environ["ANTHROPIC_API_KEY"] = "..."
-claudette_client = Client(model="claude-3-haiku-20240307")
-chat = Chat(claudette_client, sp="Respond with a haiku")
-
-# Create a FastHTML app
-app = FastHTML()
-
-# Add chat page route
-@app.get("/")
-def page():
-    return Chat.chat_page(include_style_headers=True)
-
-# Add message generation route
-app.post("/generate-message")(chat.generate_message)
-
-# Run the app
-serve()
+```bash
+python examples/min_example.py
 ```
-
-## Usage
-
-1. Initialize a `Chat` object with the client from your chosen provider (Anthropic, OpenAI, Claudette):
-   ```python
-   chat = Chat(ai_client, **client_options)
-   ```
-
-2. Set up the chat page in your FastHTML app:
-   ```python
-   @app.get("/")
-   def page():
-       return Chat.chat_page(include_style_headers=True)
-   ```
-   If you are already using pico and daisyui in your app then you don't need to include the style headers.
-
-3. Add a the generate-message route:
-   ```python
-   app.post("/generate-message")(chat.generate_message)
-   ```
-
-4. Customize the chat appearance with tailwind (optional):
-   ```python
-   custom_chat_page = Chat.chat_page(include_style_headers=False, cls="p-4 mx-auto bg-gray-400", view_height=75)
-   ```
 
 ## Supported AI Clients
 
