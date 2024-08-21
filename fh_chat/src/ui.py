@@ -70,8 +70,8 @@ def ChatPage(
         ),
     ]
     return tuple(
-        [
-            Title(title) if title else None,
+        ([Title(title)] if title else [])
+        + [
             page,
             Script(
                 src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.4.0/transfer-encoding-chunked.js"
