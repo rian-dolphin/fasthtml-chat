@@ -49,7 +49,7 @@ def ChatInput(swap_oob: bool = False, post_url: str = "/generate-message"):
 
 def ChatPage(
     include_style_headers: bool = False,
-    title: str = "Chatbot Demo",
+    title: Optional[str] = None,
     cls: str = "p-4 max-w-3xl mx-auto",
     view_height: str = 73,
 ):
@@ -67,7 +67,7 @@ def ChatPage(
     ]
     return tuple(
         [
-            Title(title),
+            Title(title) if title else None,
             page,
             Script(
                 src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.4.0/transfer-encoding-chunked.js"
