@@ -26,8 +26,9 @@ def ChatInput(
     post_url: str = "/generate-message",
     placeholder: str = "Type a message",
     group_cls: Optional[str] = None,
-    input_cls: str = "input input-bordered w-full",
-    button_cls: str = "btn btn-primary",
+    input_cls: str = "input-bordered",
+    button_cls: str = "btn-primary",
+    auto_resize: bool = True,
 ):
     attrs = {
         "hx_post": post_url,
@@ -41,17 +42,80 @@ def ChatInput(
     if swap_oob:
         attrs["hx_swap_oob"] = "outerHTML"
 
-    return Form(**attrs)(
-        Group(id="msg-group", cls=group_cls)(
-            Input(
+    max_heights = {
+        "default": "30vh",  # 30% of viewport height for smallest screens
+        "sm": "35vh",  # 35% of viewport height for small screens
+        "md": "40vh",  # 40% of viewport height for medium screens
+        "lg": "45vh",  # 45% of viewport height for large screens
+    }
+
+    max_height_classes = (
+        f"max-h-[{max_heights['default']}] "
+        f"sm:max-h-[{max_heights['sm']}] "
+        f"md:max-h-[{max_heights['md']}] "
+        f"lg:max-h-[{max_heights['lg']}]"
+    )
+
+    auto_resize_script = """
+function autoExpandTextarea() {
+  const textarea = document.getElementById('msg-input');
+  const form = document.getElementById('chat-form');
+  if (!textarea || !form) return;
+
+  function adjustHeight() {
+    textarea.style.height = '2.5em';  // Reset height to minimum
+    const maxHeight = window.innerHeight * getMaxHeightPercentage();
+    let newHeight = Math.min(textarea.scrollHeight, maxHeight);
+    textarea.style.height = newHeight + 'px';
+    textarea.style.overflowY = textarea.scrollHeight > newHeight ? 'auto' : 'hidden';
+
+    // Adjust the chat messages container
+    const chatContainer = document.getElementById('chat-messages');
+    if (chatContainer) {
+      chatContainer.style.marginBottom = (form.offsetHeight + 16) + 'px';  // 16px for padding
+    }
+  }
+
+  function getMaxHeightPercentage() {
+    const width = window.innerWidth;
+    if (width >= 1024) return 0.45;
+    if (width >= 768) return 0.40;
+    if (width >= 640) return 0.35;
+    return 0.30;
+  }
+
+  textarea.addEventListener('input', adjustHeight);
+  window.addEventListener('resize', adjustHeight);
+
+  // Initial call to set the correct height
+  adjustHeight();
+}
+
+// Call the function when the DOM is loaded
+document.addEventListener('DOMContentLoaded', autoExpandTextarea);
+// For HTMX: re-run the function after content is swapped
+document.body.addEventListener('htmx:afterSwap', autoExpandTextarea);
+    """
+
+    component = Form(
+        **attrs, cls="fixed bottom-0 left-0 right-0 bg-base-100 p-4 flex justify-center"
+    )(
+        Group(
+            id="msg-group",
+            cls=f"{group_cls} flex items-end w-3/4 sm:w-full md:w-2/3 lg:w-1/3",
+        )(
+            Textarea(
                 name="msg",
                 id="msg-input",
                 placeholder=placeholder,
-                cls=input_cls,
+                cls=f"{input_cls} input flex-grow min-h-[3em] {max_height_classes} overflow-y-auto resize-none p-2",
             ),
-            Button("Send", cls=button_cls),
+            Button("Send", cls=f"btn {button_cls} flex-shrink-0"),
         )
     )
+    if auto_resize:
+        return component, Script(auto_resize_script)
+    return component
 
 
 def ChatPage(
