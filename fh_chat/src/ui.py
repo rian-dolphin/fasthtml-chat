@@ -25,6 +25,9 @@ def ChatInput(
     swap_oob: bool = False,
     post_url: str = "/generate-message",
     placeholder: str = "Type a message",
+    group_cls: Optional[str] = None,
+    input_cls: str = "input input-bordered w-full",
+    button_cls: str = "btn btn-primary",
 ):
     attrs = {
         "hx_post": post_url,
@@ -39,14 +42,14 @@ def ChatInput(
         attrs["hx_swap_oob"] = "outerHTML"
 
     return Form(**attrs)(
-        Group(id="msg-group")(
+        Group(id="msg-group", cls=group_cls)(
             Input(
                 name="msg",
                 id="msg-input",
                 placeholder=placeholder,
-                cls="input input-bordered w-full",
+                cls=input_cls,
             ),
-            Button("Send", cls="btn btn-primary"),
+            Button("Send", cls=button_cls),
         )
     )
 
