@@ -1,11 +1,18 @@
-from claudette import Client
+from anthropic import Anthropic
 from fasthtml.common import *
 
 from fh_chat import Chat, ChatPage
 
 # os.environ["ANTHROPIC_API_KEY"] must be set
-claudette_client = Client(model="claude-3-haiku-20240307")
-chat = Chat(claudette_client, sp="You are a concise assistant.")
+anthropic_client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+# You can pass any of the body parameters supported by the API (https://docs.anthropic.com/en/api/messages)
+chat = Chat(
+    anthropic_client,
+    model="claude-3-haiku-20240307",
+    system="You are a concise assistant.",
+    max_tokens=50,
+    temperature=0.5,
+)
 
 app = FastHTML()
 
