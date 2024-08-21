@@ -6,8 +6,7 @@ with open("README.md", "r") as f:
 setup(
     name="fh-chat",
     version="0.1.0",
-    package_dir={"": "fh_chat"},
-    packages=find_packages(where="fh_chat"),
+    packages=find_packages(),
     description="A package for chat functionality in FastHTML.",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -16,6 +15,9 @@ setup(
     install_requires=[
         "python-fasthtml >= 0.4.4",
     ],
+    extras_require={
+        "dev": ["twine"],
+    },
     python_requires=">=3.8",
     author="Rian Dolphin",
     classifiers=[
