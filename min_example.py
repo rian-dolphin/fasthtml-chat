@@ -7,7 +7,7 @@ from fh_chat import Chat
 claudette_client = Client(model="claude-3-haiku-20240307")
 chat = Chat(claudette_client, sp="Respond with a haiku")
 
-app = FastHTML(cls="p-4 max-w-lg mx-auto")
+app = FastHTML()
 
 
 @app.get("/")
