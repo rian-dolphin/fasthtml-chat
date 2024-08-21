@@ -3,7 +3,7 @@ from fasthtml.common import *
 
 from fh_chat import Chat
 
-# os.environ["ANTHROPIC_API_KEY"] = "..."
+# os.environ["ANTHROPIC_API_KEY"] must be set
 claudette_client = Client(model="claude-3-haiku-20240307")
 chat = Chat(claudette_client, sp="Respond with a haiku")
 
