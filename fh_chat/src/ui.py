@@ -42,10 +42,10 @@ def ChatInput(
         attrs["hx_swap_oob"] = "outerHTML"
 
     max_heights = {
-        "default": "30vh",  # 30% of viewport height for smallest screens
-        "sm": "35vh",  # 35% of viewport height for small screens
-        "md": "40vh",  # 40% of viewport height for medium screens
-        "lg": "45vh",  # 45% of viewport height for large screens
+        "default": "30vh",
+        "sm": "35vh",
+        "md": "40vh",
+        "lg": "45vh",
     }
 
     max_height_classes = (
@@ -56,23 +56,19 @@ def ChatInput(
     )
 
     auto_resize_script = """
-function autoExpandTextarea() {
+function setupChatInput() {
   const textarea = document.getElementById('msg-input');
   const form = document.getElementById('chat-form');
-  if (!textarea || !form) return;
+  const chatlist = document.getElementById('chatlist');
+  const msgGroup = document.getElementById('msg-group');
+  if (!textarea || !form || !chatlist || !msgGroup) return;
 
-  function adjustHeight() {
+  function adjustTextarea() {
     textarea.style.height = '2.5em';  // Reset height to minimum
     const maxHeight = window.innerHeight * getMaxHeightPercentage();
     let newHeight = Math.min(textarea.scrollHeight, maxHeight);
     textarea.style.height = newHeight + 'px';
     textarea.style.overflowY = textarea.scrollHeight > newHeight ? 'auto' : 'hidden';
-
-    // Adjust the chat messages container
-    const chatContainer = document.getElementById('chat-messages');
-    if (chatContainer) {
-      chatContainer.style.marginBottom = (form.offsetHeight + 16) + 'px';  // 16px for padding
-    }
   }
 
   function getMaxHeightPercentage() {
@@ -83,11 +79,25 @@ function autoExpandTextarea() {
     return 0.30;
   }
 
-  textarea.addEventListener('input', adjustHeight);
-  window.addEventListener('resize', adjustHeight);
+  function adjustLayout() {
+    const chatlistRect = chatlist.getBoundingClientRect();
+    form.style.width = chatlistRect.width + 'px';
+    form.style.left = chatlistRect.left + 'px';
+    msgGroup.style.width = '100%';
+    chatlist.style.marginBottom = (form.offsetHeight + 16) + 'px';
+  }
 
-  // Initial call to set the correct height
-  adjustHeight();
+  textarea.addEventListener('input', adjustTextarea);
+
+  function adjustAll() {
+    adjustTextarea();
+    adjustLayout();
+  }
+
+  window.addEventListener('resize', adjustAll);
+
+  // Initial call to set the correct layout
+  adjustAll();
 
   // Add event listener for Enter key
   textarea.addEventListener('keydown', function(e) {
@@ -96,20 +106,22 @@ function autoExpandTextarea() {
       form.dispatchEvent(new Event('submit'));
     }
   });
+
+  // Observe changes to the chatlist
+  const observer = new MutationObserver(adjustAll);
+  observer.observe(chatlist, { childList: true, subtree: true });
 }
 
 // Call the function when the DOM is loaded
-document.addEventListener('DOMContentLoaded', autoExpandTextarea);
+document.addEventListener('DOMContentLoaded', setupChatInput);
 // For HTMX: re-run the function after content is swapped
-document.body.addEventListener('htmx:afterSwap', autoExpandTextarea);
+document.body.addEventListener('htmx:afterSwap', setupChatInput);
     """
 
-    component = Form(
-        **attrs, cls="fixed bottom-0 left-0 right-0 bg-base-100 p-4 flex justify-center"
-    )(
+    component = Form(**attrs, cls="fixed bottom-0 bg-base-100 p-4 flex justify-center")(
         Group(
             id="msg-group",
-            cls=f"{group_cls} flex items-end w-3/4 sm:w-full md:w-2/3 lg:w-1/3",
+            cls=f"{group_cls} flex items-end w-full",
         )(
             Textarea(
                 name="msg",
