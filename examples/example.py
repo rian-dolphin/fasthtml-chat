@@ -64,7 +64,7 @@ def generate_message(
             system_prompt,
             temperature=0.5,
             user_bubble_class="chat-bubble chat-bubble-primary",
-            assistant_bubble_class="",
+            assistant_bubble_class="chat-bubble chat-bubble-secondary",
             bubble_header=False,
         ),
         media_type="text/html",
