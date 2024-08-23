@@ -27,8 +27,6 @@ python examples/min_example.py
 ## Supported AI Clients
 
 - Anthropic: Use the `anthropic` library
-- OpenAI: Use the `openai` library
-- Claudette: Use the `claudette` library
 
 ## How It Works
 
