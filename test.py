@@ -108,11 +108,11 @@ async def generate_message(
     else:
         messages = [json.loads(m) for m in messages]
 
-    messages.append({"role": "user", "content": msg.rstrip()})
+    all_messages = messages + [{"role": "user", "content": msg.rstrip()}]
 
     async def stream_response():
-        user_msg_id = len(messages) - 1
-        assistant_msg_id = len(messages)
+        user_msg_id = len(all_messages) - 1
+        assistant_msg_id = len(all_messages)
         yield to_xml(ChatInput(swap_oob=True))
         yield to_xml(ChatMessage(msg, True, id=user_msg_id))
 
@@ -122,7 +122,7 @@ async def generate_message(
         assistant_message = ""
         with client.messages.stream(
             max_tokens=1000,
-            messages=messages,
+            messages=all_messages,
             model=model_name,
             system=system_prompt,
         ) as stream:
