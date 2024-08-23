@@ -100,13 +100,14 @@ def index():
 
 
 @app.post("/generate-message")
-async def generate_message(
+def generate_message(
     msg: str,
     messages: list[str] = None,
-    model_name: str = "claude-3-haiku-20240307",
-    system_prompt: str = "You are a helpful and concise assistant.",
 ):
     client = Anthropic(api_key=ANTHROPIC_API_KEY)
+    model_name: str = "claude-3-haiku-20240307"
+    system_prompt: str = "You are a helpful and concise assistant."
+
     if not messages:
         messages = []
     else:
@@ -114,33 +115,37 @@ async def generate_message(
 
     all_messages = messages + [{"role": "user", "content": msg.rstrip()}]
 
-    async def stream_response():
-        user_msg_id = len(all_messages) - 1
-        assistant_msg_id = len(all_messages)
-
-        user_message = ChatMessage("user", user_msg_id, msg)
-        yield to_xml(user_message.initial_render())
-
-        assistant_message = ChatMessage("assistant", assistant_msg_id)
-        yield to_xml(assistant_message.initial_render())
-
-        with client.messages.stream(
-            max_tokens=1000,
-            messages=all_messages,
-            model=model_name,
-            system=system_prompt,
-        ) as stream:
-            for text in stream.text_stream:
-                content_update, hidden_update = assistant_message.update_content(text)
-                yield to_xml(content_update)
-                yield to_xml(hidden_update)
-                await asyncio.sleep(0.05)
-
-        yield to_xml(ChatInput())
-
-    response = StreamingResponse(stream_response(), media_type="text/html")
+    response = StreamingResponse(
+        stream_response(all_messages, client, model_name, system_prompt),
+        media_type="text/html",
+    )
     response.headers["X-Transfer-Encoding"] = "chunked"
     return response
+
+
+async def stream_response(all_messages, client, model_name, system_prompt):
+    user_msg_id = len(all_messages) - 1
+    assistant_msg_id = len(all_messages)
+
+    user_message = ChatMessage("user", user_msg_id, all_messages[-1]["content"])
+    yield to_xml(user_message.initial_render())
+
+    assistant_message = ChatMessage("assistant", assistant_msg_id)
+    yield to_xml(assistant_message.initial_render())
+
+    with client.messages.stream(
+        max_tokens=1000,
+        messages=all_messages,
+        model=model_name,
+        system=system_prompt,
+    ) as stream:
+        for text in stream.text_stream:
+            content_update, hidden_update = assistant_message.update_content(text)
+            yield to_xml(content_update)
+            yield to_xml(hidden_update)
+            await asyncio.sleep(0.05)
+
+    yield to_xml(ChatInput())
 
 
 serve()
