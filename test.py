@@ -59,38 +59,30 @@ def InitialChatMessage():
 
 # The input field for the user message. Also used to clear the
 # input field after sending a message via an OOB swap
-def ChatInput(swap_oob=False, post_url="/generate-message"):
-    attrs = {
-        "hx_post": post_url,
-        "hx_target": "#chatlist",
-        "hx_swap": "beforeend",
-        "hx_ext": "chunked-transfer",
-        "id": "chat-form",
-        "hx_include": "[name='messages']",
-    }
-    if swap_oob:
-        attrs["hx_swap_oob"] = "outerHTML"
-
-    return Form(**attrs)(
-        Group(
-            Input(
-                name="msg",
-                id="msg-input",
-                placeholder="Type a message",
-                cls="input input-bordered w-full",
-            ),
-            Button("Send", cls="btn btn-primary"),
-        )
+def ChatInput():
+    return Input(
+        name="msg",
+        id="msg-input",
+        placeholder="Type a message",
+        cls="input input-bordered w-full",
+        hx_swap_oob="outerHTML",
     )
 
 
 # The main screen
 @app.get("/")
-def main():
-    page = Div(
+def index():
+    page = Form(
+        hx_post="/generate-message",
+        hx_target="#chatlist",
+        hx_swap="beforeend",
+        hx_ext="chunked-transfer",
+        hx_disabled_elt="#msg-group",
+    )(
         Div(id="chatlist", cls="chat-box h-[73vh] overflow-y-auto"),
-        ChatInput(),
-        cls="p-4 max-w-lg mx-auto",
+        Div(cls="flex space-x-2 mt-2")(
+            Group(ChatInput(), Button("Send", cls="btn btn-primary"), id="msg-group")
+        ),
     )
     return Titled("Chatbot Demo", page)
 
@@ -113,7 +105,6 @@ async def generate_message(
     async def stream_response():
         user_msg_id = len(all_messages) - 1
         assistant_msg_id = len(all_messages)
-        yield to_xml(ChatInput(swap_oob=True))
         yield to_xml(ChatMessage(msg, True, id=user_msg_id))
 
         # Create the assistant's message container
@@ -151,6 +142,8 @@ async def generate_message(
                 )
             )
             await asyncio.sleep(0.05)
+
+        yield to_xml(ChatInput())
 
     response = StreamingResponse(stream_response(), media_type="text/html")
     response.headers["X-Transfer-Encoding"] = "chunked"
