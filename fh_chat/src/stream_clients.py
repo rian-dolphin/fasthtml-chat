@@ -3,7 +3,8 @@ import asyncio
 from anthropic import Anthropic
 from fasthtml.common import *
 
-from fh_chat import ChatInput, ChatMessage
+from .chat import ChatMessage
+from .ui import ChatInput
 
 
 def validate_custom_input_ft(custom_input_ft: FT):
@@ -34,12 +35,19 @@ async def stream_response_anthropic(
     system_prompt: str,
     max_tokens: int = 1000,
     custom_input_ft: FT = None,
+    user_bubble_class: str = "chat-bubble chat-bubble-primary",
+    assistant_bubble_class: str = "chat-bubble chat-bubble-secondary",
+    bubble_header: bool = False,
     **kwargs,
 ):
     if custom_input_ft is not None:
         validate_custom_input_ft(custom_input_ft)
     else:
         custom_input_ft = ChatInput()
+
+    ChatMessage.user_bubble_class = user_bubble_class
+    ChatMessage.assistant_bubble_class = assistant_bubble_class
+    ChatMessage.bubble_header = bubble_header
 
     user_msg_id = len(all_messages) - 1
     assistant_msg_id = len(all_messages)

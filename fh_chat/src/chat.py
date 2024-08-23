@@ -4,6 +4,10 @@ from fasthtml.common import *
 
 
 class ChatMessage:
+    user_bubble_class: str = "chat-bubble chat-bubble-primary"
+    assistant_bubble_class: str = "chat-bubble chat-bubble-secondary"
+    bubble_header: bool = True
+
     def __init__(self, role, message_id, content=""):
         self.role = role
         self.message_id = message_id
@@ -16,13 +20,13 @@ class ChatMessage:
 
     def initial_render(self):
         user = self.role == "user"
-        bubble_class = "chat-bubble-primary" if user else "chat-bubble-secondary"
+        bubble_class = self.user_bubble_class if user else self.assistant_bubble_class
         chat_class = "chat-end" if user else "chat-start"
         return Div(cls=f"chat {chat_class}", id=f"message-{self.message_id}")(
-            Div(self.role, cls="chat-header"),
+            Div(self.role, cls="chat-header") if self.bubble_header else None,
             Div(
                 self.content,
-                cls=f"chat-bubble {bubble_class}",
+                cls=f"{bubble_class}",
                 id=f"message-{self.message_id}-content",
             ),
             self.hidden(initial=True),
