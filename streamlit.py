@@ -116,14 +116,23 @@ def generate_message(
     all_messages = messages + [{"role": "user", "content": msg.rstrip()}]
 
     response = StreamingResponse(
-        stream_response(all_messages, client, model_name, system_prompt),
+        stream_response_anthropic(
+            all_messages, client, model_name, system_prompt, temperature=0.5
+        ),
         media_type="text/html",
     )
     response.headers["X-Transfer-Encoding"] = "chunked"
     return response
 
 
-async def stream_response(all_messages, client, model_name, system_prompt):
+async def stream_response_anthropic(
+    all_messages: list[dict],
+    client: Anthropic,
+    model_name: str,
+    system_prompt: str,
+    max_tokens: int = 1000,
+    **kwargs,
+):
     user_msg_id = len(all_messages) - 1
     assistant_msg_id = len(all_messages)
 
@@ -134,10 +143,11 @@ async def stream_response(all_messages, client, model_name, system_prompt):
     yield to_xml(assistant_message.initial_render())
 
     with client.messages.stream(
-        max_tokens=1000,
+        max_tokens=max_tokens,
         messages=all_messages,
         model=model_name,
         system=system_prompt,
+        **kwargs,
     ) as stream:
         for text in stream.text_stream:
             content_update, hidden_update = assistant_message.update_content(text)
