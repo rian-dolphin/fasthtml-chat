@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-from contextlib import contextmanager
 
 from anthropic import Anthropic
 from fasthtml.common import *
@@ -23,50 +22,54 @@ hdrs = (
 app = FastHTML(hdrs=hdrs, cls="p-4 max-w-lg mx-auto")
 
 
-@contextmanager
-def chat_message(role, message_id):
-    yield ChatMessageBuilder(role, message_id)
-
-
-class ChatMessageBuilder:
-    def __init__(self, role, message_id):
+class ChatMessage:
+    def __init__(self, role, message_id, content=""):
         self.role = role
         self.message_id = message_id
-        self.content = ""
+        self.content = content
 
-    def write(self, content):
-        self.content += content
-        return Div(
-            self.content,
-            id=f"message-{self.message_id}-content",
-            hx_swap_oob="innerHTML",
+    @classmethod
+    def create(cls, role, message_id, content=""):
+        instance = cls(role, message_id, content)
+        return instance.render()
+
+    def initial_render(self):
+        user = self.role == "user"
+        bubble_class = "chat-bubble-primary" if user else "chat-bubble-secondary"
+        chat_class = "chat-end" if user else "chat-start"
+        return Div(cls=f"chat {chat_class}", id=f"message-{self.message_id}")(
+            Div(self.role, cls="chat-header"),
+            Div(
+                self.content,
+                cls=f"chat-bubble {bubble_class}",
+                id=f"message-{self.message_id}-content",
+            ),
+            self.hidden(initial=True),
         )
 
-    def hidden(self):
+    def update_content(self, new_content):
+        self.content += new_content
+        return (
+            Div(
+                self.content,
+                id=f"message-{self.message_id}-content",
+                hx_swap_oob="innerHTML",
+            ),
+            self.hidden(initial=False),
+        )
+
+    def hidden(self, initial=False):
+        hidden_attrs = {
+            "name": "messages",
+            "id": f"message-{self.message_id}-hidden",
+        }
+        # Inital render should not have a swap since nothing to swaw with yet
+        if not initial:
+            hidden_attrs["hx_swap_oob"] = "outerHTML"
+
         return Hidden(
-            json.dumps({"role": self.role, "content": self.content}),
-            name="messages",
-            hx_swap_oob="outerHTML",
-            id=f"message-{self.message_id}-hidden",
+            json.dumps({"role": self.role, "content": self.content}), **hidden_attrs
         )
-
-
-def ChatMessage(msg, user: bool, id: int = None):
-    bubble_class = "chat-bubble-primary" if user else "chat-bubble-secondary"
-    chat_class = "chat-end" if user else "chat-start"
-    return Div(cls=f"chat {chat_class}", id=f"message-{id}")(
-        Div("user" if user else "assistant", cls="chat-header"),
-        Div(
-            msg,
-            cls=f"chat-bubble {bubble_class}",
-            id=f"message-{id}-content" if id else None,
-        ),
-        Hidden(
-            json.dumps({"role": "user" if user else "assistant", "content": msg}),
-            name="messages",
-            id=f"message-{id}-hidden" if id else None,
-        ),
-    )
 
 
 def ChatInput():
@@ -112,29 +115,26 @@ async def generate_message(
     all_messages = messages + [{"role": "user", "content": msg.rstrip()}]
 
     async def stream_response():
-
         user_msg_id = len(all_messages) - 1
         assistant_msg_id = len(all_messages)
 
-        with chat_message("user", user_msg_id) as user_message:
-            yield to_xml(ChatMessage(msg, True, id=user_msg_id))
-            yield to_xml(user_message.hidden())
+        user_message = ChatMessage("user", user_msg_id, msg)
+        yield to_xml(user_message.initial_render())
 
-        with chat_message("assistant", assistant_msg_id) as assistant_message:
-            yield to_xml(ChatMessage("", False, id=assistant_msg_id))
+        assistant_message = ChatMessage("assistant", assistant_msg_id)
+        yield to_xml(assistant_message.initial_render())
 
-            with client.messages.stream(
-                max_tokens=1000,
-                messages=all_messages,
-                model=model_name,
-                system=system_prompt,
-            ) as stream:
-                for text in stream.text_stream:
-                    yield to_xml(assistant_message.write(text))
-                    await asyncio.sleep(0.05)
-
-            yield to_xml(assistant_message.hidden())
-            print(f"Yielding hidden message {to_xml(assistant_message.hidden())}")
+        with client.messages.stream(
+            max_tokens=1000,
+            messages=all_messages,
+            model=model_name,
+            system=system_prompt,
+        ) as stream:
+            for text in stream.text_stream:
+                content_update, hidden_update = assistant_message.update_content(text)
+                yield to_xml(content_update)
+                yield to_xml(hidden_update)
+                await asyncio.sleep(0.05)
 
         yield to_xml(ChatInput())
 
