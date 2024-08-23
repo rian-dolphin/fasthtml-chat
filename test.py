@@ -146,7 +146,7 @@ async def generate_message(
                 Hidden(
                     json.dumps({"role": role, "content": message}),
                     name="messages",
-                    hx_swap_oob="true",
+                    hx_swap_oob="outerHTML",
                     id=f"message-{i}-hidden",
                 )
             )
