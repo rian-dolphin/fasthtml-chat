@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+from contextlib import contextmanager
 
 from anthropic import Anthropic
 from fasthtml.common import *
@@ -22,6 +23,34 @@ hdrs = (
 app = FastHTML(hdrs=hdrs, cls="p-4 max-w-lg mx-auto")
 
 
+@contextmanager
+def chat_message(role, message_id):
+    yield ChatMessageBuilder(role, message_id)
+
+
+class ChatMessageBuilder:
+    def __init__(self, role, message_id):
+        self.role = role
+        self.message_id = message_id
+        self.content = ""
+
+    def write(self, content):
+        self.content += content
+        return Div(
+            self.content,
+            id=f"message-{self.message_id}-content",
+            hx_swap_oob="innerHTML",
+        )
+
+    def hidden(self):
+        return Hidden(
+            json.dumps({"role": self.role, "content": self.content}),
+            name="messages",
+            hx_swap_oob="outerHTML",
+            id=f"message-{self.message_id}-hidden",
+        )
+
+
 def ChatMessage(msg, user: bool, id: int = None):
     bubble_class = "chat-bubble-primary" if user else "chat-bubble-secondary"
     chat_class = "chat-end" if user else "chat-start"
@@ -40,25 +69,6 @@ def ChatMessage(msg, user: bool, id: int = None):
     )
 
 
-def InitialChatMessage():
-    # Create initial html divs with the name 'messages'
-    # These are necessary for hx-include
-    return Div(id=f"message-placeholder")(
-        Hidden(
-            json.dumps(
-                {
-                    "role": "placeholder",
-                    "content": "Initiate the messages for hx-include",
-                }
-            ),
-            name="messages",
-            id="message-placeholder-hidden",
-        ),
-    )
-
-
-# The input field for the user message. Also used to clear the
-# input field after sending a message via an OOB swap
 def ChatInput():
     return Input(
         name="msg",
@@ -99,49 +109,34 @@ async def generate_message(
     else:
         messages = [json.loads(m) for m in messages]
 
-    messages.append({"role": "user", "content": msg.rstrip()})
+    all_messages = messages + [{"role": "user", "content": msg.rstrip()}]
 
     async def stream_response():
-        user_msg_id = len(messages) - 1
-        assistant_msg_id = len(messages)
+
+        user_msg_id = len(all_messages) - 1
+        assistant_msg_id = len(all_messages)
+
+        with chat_message("user", user_msg_id) as user_message:
+            yield to_xml(ChatMessage(msg, True, id=user_msg_id))
+            yield to_xml(user_message.hidden())
+
+        with chat_message("assistant", assistant_msg_id) as assistant_message:
+            yield to_xml(ChatMessage("", False, id=assistant_msg_id))
+
+            with client.messages.stream(
+                max_tokens=1000,
+                messages=all_messages,
+                model=model_name,
+                system=system_prompt,
+            ) as stream:
+                for text in stream.text_stream:
+                    yield to_xml(assistant_message.write(text))
+                    await asyncio.sleep(0.05)
+
+            yield to_xml(assistant_message.hidden())
+            print(f"Yielding hidden message {to_xml(assistant_message.hidden())}")
+
         yield to_xml(ChatInput())
-        yield to_xml(ChatMessage(msg, True, id=user_msg_id))
-
-        # Create the assistant's message container
-        yield to_xml(ChatMessage("", False, id=assistant_msg_id))
-
-        assistant_message = ""
-        with client.messages.stream(
-            max_tokens=1000,
-            messages=messages,
-            model=model_name,
-            system=system_prompt,
-        ) as stream:
-            for text in stream.text_stream:
-                assistant_message += text
-                yield to_xml(
-                    Div(
-                        assistant_message,
-                        id=f"message-{assistant_msg_id}-content",
-                        hx_swap_oob="innerHTML",
-                    )
-                )
-                await asyncio.sleep(0.05)
-
-        # State is stored in the html directly via hidden messages with ids
-        for role, i, message in [
-            ("user", user_msg_id, msg),
-            ("assistant", assistant_msg_id, assistant_message),
-        ]:
-            yield to_xml(
-                Hidden(
-                    json.dumps({"role": role, "content": message}),
-                    name="messages",
-                    hx_swap_oob="outerHTML",
-                    id=f"message-{i}-hidden",
-                )
-            )
-            await asyncio.sleep(0.05)
 
     response = StreamingResponse(stream_response(), media_type="text/html")
     response.headers["X-Transfer-Encoding"] = "chunked"
