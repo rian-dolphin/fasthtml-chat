@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="fh-chat",
-    version="0.2.0",
+    version="0.3.0",
     packages=find_packages(),
     description="A package for chat functionality in FastHTML.",
     long_description=long_description,
