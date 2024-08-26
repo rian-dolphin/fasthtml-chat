@@ -5,12 +5,11 @@ from anthropic import Anthropic
 from fasthtml.common import *
 from starlette.responses import StreamingResponse
 
-from fh_chat import ChatInput, stream_response_anthropic
+from fh_chat import stream_response_anthropic
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
 hdrs = (
-    picolink,
     Script(
         src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.4.0/transfer-encoding-chunked.js"
     ),
@@ -23,6 +22,16 @@ hdrs = (
 app = FastHTML(hdrs=hdrs, cls="p-4 max-w-lg mx-auto")
 
 
+def ChatInput():
+    return Input(
+        name="msg",
+        id="msg-input",
+        placeholder="Type a message",
+        cls="input input-bordered w-full",
+        hx_swap_oob="outerHTML",
+    )
+
+
 @app.get("/")
 def index():
     page = Form(
@@ -30,11 +39,11 @@ def index():
         hx_target="#chatlist",
         hx_swap="beforeend",
         hx_ext="chunked-transfer",
-        hx_disabled_elt="#msg-group",
+        hx_disabled_elt="#msg-input,#msg-input-button",
     )(
         Div(id="chatlist", cls="chat-box h-[73vh] overflow-y-auto"),
-        Div(cls="flex space-x-2 mt-2")(
-            Group(ChatInput(), Button("Send", cls="btn btn-primary"), id="msg-group")
+        Div(cls="join flex space-x-2 mt-2")(
+            ChatInput(), Button("Send", cls="btn btn-primary", id="msg-input-button")
         ),
     )
     return Titled("Chatbot Demo", page)
