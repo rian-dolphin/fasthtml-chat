@@ -11,7 +11,7 @@ app, _ = fast_app(pico=False)
 # Create a ChatApp instance
 chat_app = ChatApp(
     app,
-    model_provider="anthropic",  # or "openai", "mock"
+    model_provider="anthropic",
     api_key=ANTHROPIC_API_KEY,
     model_name="claude-3-haiku-20240307",
     system_prompt="You are a helpful assistant. Keep your answers concise.",
@@ -26,7 +26,7 @@ chat_app.add_chat_route(title="AI Assistant")
 chat_app.add_chat_route(
     route_path="/poem",
     system_prompt="Answer all user requests with a very short poem.",
-    model_name="claude-3-sonnet-20240229",  # Higher quality model for marketing
+    model_name="claude-3-sonnet-20240229",
     button_text="Generate",
     placeholder="Describe the poem you want...",
     title="Poet",
@@ -39,15 +39,13 @@ chat_app.add_chat_route(
 def index():
     return Titled(
         "Chat Demo",
-        Div(
+        Div(cls="container mx-auto p-4")(
             H1("Chat Demo", cls="text-2xl font-bold mb-4"),
-            Div(
+            Div(cls="mb-8")(
                 A("General Assistant", href="/chat", cls="btn btn-primary mr-2"),
                 A("Poet", href="/chat/poem", cls="btn btn-secondary"),
-                cls="mb-8",
             ),
             P("Choose a chat type to get started", cls="text-gray-600"),
-            cls="container mx-auto p-4",
         ),
     )
 
