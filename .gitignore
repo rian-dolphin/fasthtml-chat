@@ -7,3 +7,8 @@ keys.py
 # Python bits
 __pycache__/
 *.py[cod]
+
+.venv/
+.ruff_cache/
+dist/
+.DS_Store

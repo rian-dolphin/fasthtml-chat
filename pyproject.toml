@@ -1,0 +1,24 @@
+[project]
+name = "fh-chat"
+version = "0.3.1"
+description = "A package for chat functionality in FastHTML."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Rian Dolphin" }]
+dependencies = ["anthropic>=0.45.2", "python-fasthtml>=0.12.1"]
+
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+"Source" = "https://github.com/rian-dolphin/fasthtml-chat"
+
+[dependency-groups]
+dev = ["fh-chat", "requests>=2.32.3", "twine>=6.1.0"]
+
+[tool.uv.sources]
+fh-chat = { workspace = true }
+
+[tool.ruff.lint]
+ignore = ["F403", "F405"]
