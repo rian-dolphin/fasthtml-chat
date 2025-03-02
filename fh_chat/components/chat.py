@@ -45,7 +45,7 @@ def ChatInput(
                     name="msg",
                     id="msg-input",
                     placeholder=placeholder,
-                    cls="input input-bordered w-full",
+                    cls="input w-full",
                 ),
                 Button(button_text, cls="btn btn-primary"),
             )
@@ -148,9 +148,10 @@ def get_chat_headers():
         Script(
             src="https://unpkg.com/htmx-ext-transfer-encoding-chunked@0.4.0/transfer-encoding-chunked.js"
         ),
-        Script(src="https://cdn.tailwindcss.com"),
+        Script(src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"),
         Link(
             rel="stylesheet",
-            href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css",
+            href="https://cdn.jsdelivr.net/npm/daisyui@5",
+            type="text/css",
         ),
     ]

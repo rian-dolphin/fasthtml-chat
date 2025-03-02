@@ -6,7 +6,7 @@ from keys import ANTHROPIC_API_KEY
 from fh_chat import ChatApp, ChatTheme
 
 # Set up FastHTML app
-app, _ = fast_app()
+app, _ = fast_app(pico=False)
 
 # Create a ChatApp instance
 chat_app = ChatApp(
