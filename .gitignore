@@ -12,3 +12,5 @@ __pycache__/
 .ruff_cache/
 dist/
 .DS_Store
+# Tailwind config file just to activate the intellisense extension
+tailwind.config.js
