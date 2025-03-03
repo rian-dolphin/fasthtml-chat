@@ -37,16 +37,13 @@ chat_app.add_chat_route(
 # Add a route for the index page
 @app.get("/")
 def index():
-    return Titled(
-        "Chat Demo",
-        Div(cls="container mx-auto p-4")(
-            H1("Chat Demo", cls="text-2xl font-bold mb-4"),
-            Div(cls="mb-8")(
-                A("General Assistant", href="/chat", cls="btn btn-primary mr-2"),
-                A("Poet", href="/chat/poem", cls="btn btn-secondary"),
-            ),
-            P("Choose a chat type to get started", cls="text-gray-600"),
+    return Div(cls="container mx-auto p-4")(
+        H1("Chat Demo", cls="text-2xl font-bold mb-4"),
+        Div(cls="mb-8")(
+            A("General Assistant", href="/chat", cls="btn btn-primary mr-2"),
+            A("Poet", href="/chat/poem", cls="btn btn-secondary"),
         ),
+        P("Choose a chat type to get started", cls="text-gray-600"),
     )
 
 
