@@ -1,9 +1,0 @@
-build/
-dist/
-*.egg-info/
-keys.py
-.sesskey
-
-# Python bits
-__pycache__/
-*.py[cod]
